@@ -1,32 +1,29 @@
 import numpy as np
 import matplotlib.pyplot as plt
-import pandas as pd
+
+def initialize_centroids(X, k):
+    # Randomly select k data points as initial centroids
+    return X[np.random.choice(len(X), k, replace=False)]
+
+def assign_to_clusters(X, centroids):
+    # Assign each data point to the cluster with the closest centroid
+    return np.argmin(np.linalg.norm(X - centroids[:, np.newaxis], axis=2), axis=0)
+
+def update_centroids(X, labels, k):
+    # Move each centroid to the mean of its partition
+    new_centroids = np.array([X[labels == j].mean(axis=0) for j in range(k)])
+    return new_centroids
 
 def k_means(X, k, max_iters=100, tol=1e-4):
-    """
-    K-means clustering algorithm.
-
-    Parameters:
-        X (numpy.ndarray): Input data with shape (m, n), where m is the number of samples and n is the number of features.
-        k (int): Number of clusters.
-        max_iters (int): Maximum number of iterations.
-        tol (float): Tolerance to declare convergence.
-
-    Returns:
-        centroids (numpy.ndarray): Final cluster centroids with shape (k, n).
-        labels (numpy.ndarray): Labels assigned to each data point.
-    """
-    m, n = X.shape
-
-    # Initialize centroids randomly
-    centroids = X[np.random.choice(m, k, replace=False)]
+    # Step 1: Initialize centroids
+    centroids = initialize_centroids(X, k)
 
     for _ in range(max_iters):
-        # Assign each data point to the nearest centroid
-        labels = np.argmin(np.linalg.norm(X - centroids[:, np.newaxis], axis=2), axis=0)
+        # Step 2: Assign data points to clusters
+        labels = assign_to_clusters(X, centroids)
 
-        # Update centroids
-        new_centroids = np.array([X[labels == j].mean(axis=0) for j in range(k)])
+        # Step 3: Update centroids
+        new_centroids = update_centroids(X, labels, k)
 
         # Check for convergence
         if np.linalg.norm(new_centroids - centroids) < tol:
